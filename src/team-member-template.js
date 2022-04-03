@@ -18,7 +18,7 @@ if (employeeType == 'engineer') {
             <div class="text-lg font-bold">${name} <span class="text-sm">${employeeType}</span></div>
             <div class="italic">EMPLOYEE ID: ${employeeID}</div>
             <div class="italic">EMAIL: <a href="mailto:${email}">${email}</a></div>
-            <div class="italic">${employeeGitSchool}: <a href="https://www.github.com/${githubOrSchool}">${githubOrSchool}</div>
+            <div class="italic">${employeeGitSchool}: <a href="https://www.github.com/${githubOrSchool}">${githubOrSchool}</a></div>
         </section>
         <br />
         <section class="biography">
