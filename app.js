@@ -2,9 +2,11 @@ const inquirer = require('inquirer');
 const fs = require('fs');
 const generateHTML = require('./src/team-manager-template');
 const addmember = require('./src/team-member-template');
-
+const EndOfHTML = require('./src/end-of-html');
 const { clear } = require('console');
 const { off } = require('process');
+const endOfHtml = require('./src/end-of-html');
+const { type } = require('os');
 var empInputType = '';
 
 // Input Team Manager Information
@@ -104,13 +106,11 @@ return inquirer
         console.log(employeeChoiceData)
         if (employeeChoiceData.employeeType == 'Add an engineer') {
             empInputType = 'engineer';
-            employeeInput(empInputType);
-            
+            employeeInput();
         }
         else {
             empInputType = 'intern';
             employeeInput();
-            
         }
     })
 }
@@ -160,20 +160,6 @@ return inquirer
                 }
             }
         },
-        {
-            type: 'input',
-            name: 'officenumber',
-            message: `Enter the ${empInputType}'s office number. (Required) `,
-            validate: officeInput => {
-                if (officeInput) {
-                    return true;
-                }
-                else {
-                    console.log('Please enter an office number!');
-                    return false;
-                }
-            }
-        } 
     ])
     .then(memberInputData => {
         if (!memberInputData.employeeType) {
@@ -182,16 +168,81 @@ return inquirer
         
         memberInputData.employeeType.push(empInputType);
 
-        const teamMemberAdd = addmember(memberInputData);
+        if (!memberInputData.githubschool) {
+            memberInputData.githubschool = [];
+        }
+        
 
-        fs.appendFile('./team-profile.html', teamMemberAdd, err => {
-            if (err) throw new Error(err);
-         });
+        if (empInputType == 'engineer') {
+            if (!memberInputData.employeeGitSchool) {
+                memberInputData.employeeGitSchool = [];
+            }
 
+            memberInputData.employeeGitSchool.push("GITHUB LINK")
 
-        addMore();
-        return memberInputData;
+            return inquirer
+                .prompt ([
+                    {
+                        type: 'input',
+                        name: 'githubOrSchool',
+                        message: `Enter the ${empInputType}'s Github username. (Required) `,
+                        validate: employeeGithubOrSchoolInput => {
+                            if (employeeGithubOrSchoolInput) {
+                              return true;
+                            } else {
+                              console.log('Please enter a valid Github!');
+                              return false;
+                            }
+                        }
+                    }
+                ])
+                .then(data => {
+                    memberInputData.githubschool.push(data)
+                    addingTeamMember(memberInputData);
+                    return memberInputData;
+                })
+        }
+        else {
+            if (!memberInputData.employeeGitSchool) {
+                memberInputData.employeeGitSchool = [];
+            }
+
+            memberInputData.employeeGitSchool.push("SCHOOL NAME")
+            return inquirer 
+            .prompt ([
+                {
+                    type: 'input',
+                    name: 'githubOrSchool',
+                    message: `Enter the ${empInputType}'s School. (Required) `,
+                    validate: employeeGithubOrSchoolInput => {
+                        if (employeeGithubOrSchoolInput) {
+                          return true;
+                        } else {
+                          console.log('Please enter a valid School!');
+                          return false;
+                        }
+                    }
+                }
+            ])
+            .then(data => {
+                memberInputData.githubschool.push(data)
+                addingTeamMember(memberInputData);
+                return memberInputData;
+            })
+        }
     })
+    
+}
+
+const addingTeamMember = (memberInputData) => {
+    const teamMemberAdd = addmember(memberInputData);
+
+    fs.appendFile('./team-profile.html', teamMemberAdd, err => {
+        if (err) throw new Error(err);
+     });
+
+
+    addMore();
 }
 
 const addMore = () => {
@@ -209,9 +260,13 @@ return inquirer
             employeeChoice();
         }
         else {
-            console.log(
-                `Done! Enjoy the fruits of your labor!`
-            )
+            const endHTML = endOfHtml();
+
+            fs.appendFile('./team-profile.html', endHTML, err => {
+                if (err) throw new Error(err);
+             });
+
+             console.log("Done! Enjoy the fruits of your labor!")
         }
     }
     )
